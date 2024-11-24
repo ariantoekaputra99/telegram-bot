@@ -1,36 +1,42 @@
-from telegram import Update
+from telegram import Update, ChatPermissions
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
-# Token bot yang didapatkan dari BotFather
-TOKEN = '1589813736:AAHcBLf-nsqUDDBoqhI3VUCp_XglDZGJDrc'
+# Masukkan token bot Anda di sini
+TOKEN = "7811119595:AAETqRxt0Nfz7uNDQffHFjJ3bTrXyFo-aiA"
 
 # Fungsi untuk menyambut anggota baru
-def welcome(update: Update, context: CallbackContext) -> None:
+def welcome(update: Update, context: CallbackContext):
     for member in update.message.new_chat_members:
-        update.message.reply_text(f"Selamat datang, {member.full_name}!, Jangan Lupa baca rules di deskripsi ya 🎉")
+        welcome_message = f"Selamat datang, {member.full_name}! Jangan lupa baca rules di deskripsi 😊"
+        context.bot.send_message(chat_id=update.effective_chat.id, text=welcome_message)
 
-# Fungsi untuk menghapus pesan yang berisi link
-def remove_links(update: Update, context: CallbackContext) -> None:
-    if any(word in update.message.text for word in ["http://", "https://", ".com", ".id", ".net", ".org"]):
-        update.message.delete()
+# Fungsi untuk menghapus pesan spam atau link
+def filter_messages(update: Update, context: CallbackContext):
+    message = update.message
+    # Hapus pesan yang mengandung link atau mention bot
+    if "http" in message.text or "@" in message.text:
+        message.delete()
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Pesan dengan link atau mention bot dihapus!")
+
+# Fungsi untuk memulai bot
+def start(update: Update, context: CallbackContext):
+    update.message.reply_text("Halo! Saya siap membantu. 😊")
 
 # Fungsi utama untuk menjalankan bot
-def main() -> None:
-    # Membuat Updater dan menyambungkan dengan token API
+def main():
     updater = Updater(TOKEN)
+    dp = updater.dispatcher
 
-    # Mendapatkan dispatcher untuk menambahkan handler
-    dispatcher = updater.dispatcher
-
-    # Menambahkan handler untuk menyambut anggota baru
-    dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, welcome))
-
-    # Menambahkan handler untuk mendeteksi dan menghapus pesan berisi link
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, remove_links))
+    # Handler untuk menyambut anggota baru
+    dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, welcome))
+    # Handler untuk memfilter pesan
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, filter_messages))
+    # Handler untuk perintah /start
+    dp.add_handler(CommandHandler("start", start))
 
     # Mulai bot
     updater.start_polling()
     updater.idle()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
