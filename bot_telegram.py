@@ -1,4 +1,5 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, filters, CallbackContext
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 
 # Masukkan token bot Anda di sini
