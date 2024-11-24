@@ -13,6 +13,18 @@ def welcome(update: Update, context: CallbackContext):
 # Fungsi untuk menghapus pesan spam atau link
 def filter_messages(update: Update, context: CallbackContext):
     message = update.message
+
+    # Periksa apakah pengirim pesan adalah admin
+    chat_id = message.chat.id
+    user_id = message.from_user.id
+
+    # Dapatkan daftar admin
+    admins = context.bot.get_chat_administrators(chat_id)
+    admin_ids = [admin.user.id for admin in admins]
+
+    if user_id in admin_ids:
+        # Jika pengirim adalah admin, abaikan pesan
+        return
     # Hapus pesan yang mengandung link atau mention bot
     if "http" in message.text or "@" in message.text:
         message.delete()
