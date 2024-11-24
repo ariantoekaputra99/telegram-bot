@@ -1,6 +1,5 @@
-from telegram import Update, ChatPermissions
 from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext
-from telegram import filters
+from telegram.ext.filters import Filters
 
 # Masukkan token bot Anda di sini
 TOKEN = "7811119595:AAETqRxt0Nfz7uNDQffHFjJ3bTrXyFo-aiA"
@@ -26,7 +25,6 @@ def filter_messages(update: Update, context: CallbackContext):
     if user_id in admin_ids:
         # Jika pengirim adalah admin, abaikan pesan
         return
-
     # Hapus pesan yang mengandung link atau mention bot
     if "http" in message.text or "@" in message.text:
         message.delete()
@@ -38,23 +36,19 @@ def start(update: Update, context: CallbackContext):
 
 # Fungsi utama untuk menjalankan bot
 def main():
-    # Menggunakan Application dari telegram.ext pada versi terbaru (v20+)
-    from telegram.ext import Application
-
-    # Membuat aplikasi dengan token
-    application = Application.builder().token(TOKEN).build()
+    updater = Updater(TOKEN)
+    dp = updater.dispatcher
 
     # Handler untuk menyambut anggota baru
-    application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome))
-    
+    dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, welcome))
     # Handler untuk memfilter pesan
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, filter_messages))
-    
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, filter_messages))
     # Handler untuk perintah /start
-    application.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("start", start))
 
     # Mulai bot
-    application.run_polling()
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == "__main__":
     main()
